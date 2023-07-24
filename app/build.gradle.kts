@@ -61,6 +61,7 @@ dependencies {
     implementation(libs.ui.tooling.preview)
     implementation(libs.material3)
     implementation(libs.retrofit)
+    implementation(libs.retrofitGsonConverter)
     implementation(files("libs/Lite3dMap_1.2.0_AMapSearch_9.5.0_AMapLocation_6.3.0_20230410.aar"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
