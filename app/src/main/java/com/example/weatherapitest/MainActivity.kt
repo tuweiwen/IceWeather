@@ -1,5 +1,7 @@
 package com.example.weatherapitest
 
+import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -7,108 +9,62 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.material3.Button
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.res.imageResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.amap.api.location.AMapLocationClient
+import androidx.lifecycle.ViewModelProvider
 import com.amap.api.location.AMapLocationClient.updatePrivacyAgree
 import com.amap.api.location.AMapLocationClient.updatePrivacyShow
-import com.amap.api.location.AMapLocationClientOption
-import com.amap.api.location.AMapLocationClientOption.setLocationProtocol
-import com.amap.api.services.core.LatLonPoint
-import com.amap.api.services.geocoder.GeocodeResult
-import com.amap.api.services.geocoder.GeocodeSearch
-import com.amap.api.services.geocoder.GeocodeSearch.OnGeocodeSearchListener
-import com.amap.api.services.geocoder.RegeocodeQuery
-import com.amap.api.services.geocoder.RegeocodeResult
 import com.example.weatherapitest.ui.theme.WeatherApiTestTheme
 
 private const val TAG = "MainActivity"
+
+@SuppressLint("StaticFieldLeak")
 
 class MainActivity : ComponentActivity() {
     private val permissionRequestLauncher: ActivityResultLauncher<String> =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
-                Log.d(TAG, "onCreate: success!")
+                Log.d(TAG, "onCreate: permission success!")
             } else {
-                Log.d(TAG, "onCreate: failed")
+                Log.d(TAG, "onCreate: permission failed!")
             }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 高德隐私合规
-        updatePrivacyShow(this, true, true)
-        updatePrivacyAgree(this, true)
-
-        // 高德定位Client参数
-        val options: AMapLocationClientOption = AMapLocationClientOption().apply {
-            locationMode = AMapLocationClientOption.AMapLocationMode.Device_Sensors
-            isOnceLocation = true
-            setLocationProtocol(AMapLocationClientOption.AMapLocationProtocol.HTTPS)
+        val viewModel = ViewModelProvider(this)[MainViewModel::class.java].apply {
+            getPosition()
+//            requestNewWeatherData()
         }
-
-        // 高德定位Client
-        val locationClient: AMapLocationClient = AMapLocationClient(applicationContext)
-        locationClient.setLocationOption(options)
-
-        // 高德地理搜索
-        val geoSearch = GeocodeSearch(this)
-        // 搜索监听回调
-        geoSearch.setOnGeocodeSearchListener(object : OnGeocodeSearchListener {
-            override fun onRegeocodeSearched(p0: RegeocodeResult?, p1: Int) {
-                if (p1 == 1000) {
-                    Log.d(TAG, "RegeoResult: ${p0!!.regeocodeAddress.formatAddress}")
-                }
-            }
-
-            override fun onGeocodeSearched(p0: GeocodeResult?, p1: Int) {
-                Log.d(TAG, "onGeocodeSearched: $p0")
-            }
-        })
-
-        /*
-        // 搜索查询参数
-//        val searchParam = RegeocodeQuery(LatLonPoint(121.4771, 31.2390), 10F, GeocodeSearch.AMAP)
-        // 进行异步搜索
-//        geoSearch.getFromLocationAsyn(searchParam)*/
-
-        // 定位Callback
-        locationClient.setLocationListener {
-            Log.d(TAG, "setLocationListener")
-            Log.d(TAG, "onCreate: $it")
-            val query =
-                RegeocodeQuery(LatLonPoint(it.longitude, it.latitude), 100F, GeocodeSearch.AMAP)
-            geoSearch.getFromLocationAsyn(query)
-            // 获取定位后，停止Client
-            locationClient.stopLocation()
-        }
-
-        // 开始获取定位
-        locationClient.startLocation()
 
         // 权限检查
-        /*if (checkSelfPermission("android.permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_GRANTED) {
+        if (checkSelfPermission("android.permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_GRANTED) {
             // permission granted -> do get position feature here
             Log.d(TAG, "onCreate: get location permission!")
         } else {
@@ -116,7 +72,7 @@ class MainActivity : ComponentActivity() {
             //                      and we will expaine this later in artical
             permissionRequestLauncher.launch("android.permission.ACCESS_FINE_LOCATION")
             Log.d(TAG, "onCreate: don't get location permission!")
-        }*/
+        }
 
         setContent {
             WeatherApiTestTheme {
@@ -125,23 +81,18 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("Android")
+                    WeatherPage(modifier = Modifier.fillMaxWidth(), viewModel = viewModel)
                 }
             }
         }
+
+
+        viewModel.requestNewWeatherData()
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Composable
-fun CurrentWeather() {
+fun CurrentWeather(temperature: Double, weather: String, keypoint: String) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.padding(top = 30.dp, bottom = 30.dp)
@@ -152,28 +103,34 @@ fun CurrentWeather() {
             modifier = Modifier.width(100.dp)
         )
         Row(modifier = Modifier.padding(top = 40.dp, bottom = 20.dp)) {
-            Text("32℃", fontSize = 35.sp)
-            Text("|", modifier = Modifier.padding(start = 30.dp, end = 30.dp), fontSize = 35.sp)
-            Text("多云", fontSize = 35.sp)
+            Text("${temperature.toInt()}℃", fontSize = 25.sp)
+            Text("|", modifier = Modifier.padding(start = 30.dp, end = 30.dp), fontSize = 25.sp)
+            Text(weather, fontSize = 25.sp)
         }
-        Text("最近的降雨带在南边114公里外呢", fontSize = 20.sp)
+        Text(keypoint, fontSize = 15.sp)
     }
 }
 
+// todo("漏了skycon没写")
 @Composable
-fun HourForecastList() {
+fun HourForecastList(hourlyWeather: WeatherData.Result.Hourly?) {
     LazyRow {
         item {
             HourForecastItem(
-                Modifier
-                    .padding(start = 20.dp, end = 20.dp),
+                Modifier.padding(start = 20.dp, end = 20.dp),
+                temperature = hourlyWeather?.temperature?.get(0)?.value ?: 34.toDouble(),
+                time = hourlyWeather?.temperature?.get(0)?.datetime?.removeRange(0..10)
+                    ?.removeRange(5..10) ?: "12:00"
             )
         }
-        repeat(11) {
+        repeat(11) { index ->
             item {
                 HourForecastItem(
-                    Modifier
-                        .padding(end = 20.dp),
+                    Modifier.padding(end = 20.dp),
+                    temperature = hourlyWeather?.temperature?.get(index + 1)?.value
+                        ?: 34.toDouble(),
+                    time = hourlyWeather?.temperature?.get(index + 1)?.datetime?.removeRange(0..10)
+                        ?.removeRange(5..10) ?: "12:00"
                 )
             }
         }
@@ -181,36 +138,58 @@ fun HourForecastList() {
 }
 
 @Composable
-fun HourForecastItem(modifier: Modifier, time: String = "12:00", temperature: String = "34") {
+fun HourForecastItem(
+    modifier: Modifier,
+    time: String = "12:00",
+    temperature: Double = 34.toDouble()
+) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = time, fontSize = 20.sp, modifier = Modifier.padding(bottom = 5.dp))
+        Text(text = time, fontSize = 15.sp, modifier = Modifier.padding(bottom = 5.dp))
         Image(
             bitmap = ImageBitmap.imageResource(id = R.drawable.test_photo),
             contentDescription = null,
             modifier = Modifier.width(50.dp)
         )
-        Text("$temperature℃", fontSize = 20.sp, modifier = Modifier.padding(top = 5.dp))
+        Text("${temperature.toInt()}℃", fontSize = 15.sp, modifier = Modifier.padding(top = 5.dp))
     }
 }
 
 @Composable
-fun DailyForecastList() {
+fun DailyForecastList(dailyWeather: WeatherData.Result.Daily?) {
     Column {
         DailyForecastItem(
             modifier = Modifier
                 .padding(top = 20.dp, bottom = 20.dp)
-                .align(Alignment.CenterHorizontally)
+                .align(Alignment.CenterHorizontally),
+            tempMax = dailyWeather?.temperature?.get(0)?.max ?: 12.toDouble(),
+            tempMin = dailyWeather?.temperature?.get(0)?.min ?: 23.toDouble(),
+            skycon = dailyWeather?.skycon?.get(0)?.value ?: "不知道",
+            date = dailyWeather?.temperature?.get(0)?.date?.removeRange(0..4)?.removeRange(5..16)
+                ?: "7-20"
         )
-        repeat(4) {
-            DailyForecastItem(modifier = Modifier.padding(bottom = 20.dp))
+        repeat(4) { index ->
+            DailyForecastItem(
+                modifier = Modifier.padding(bottom = 20.dp),
+                tempMax = dailyWeather?.temperature?.get(index + 1)?.max ?: 12.toDouble(),
+                tempMin = dailyWeather?.temperature?.get(index + 1)?.min ?: 23.toDouble(),
+                skycon = dailyWeather?.skycon?.get(index + 1)?.value ?: "不知道",
+                date = dailyWeather?.temperature?.get(index + 1)?.date?.removeRange(0..4)
+                    ?.removeRange(5..16) ?: "7-20"
+            )
         }
     }
 }
 
 @Composable
-fun DailyForecastItem(modifier: Modifier) {
+fun DailyForecastItem(
+    modifier: Modifier,
+    tempMax: Double,
+    tempMin: Double,
+    skycon: String,
+    date: String
+) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        Text("7-24", fontSize = 20.sp)
+        Text(date, fontSize = 15.sp)
         Image(
             bitmap = ImageBitmap.imageResource(id = R.drawable.test_photo),
             contentDescription = null,
@@ -218,18 +197,48 @@ fun DailyForecastItem(modifier: Modifier) {
                 .height(50.dp)
                 .padding(start = 10.dp, end = 10.dp)
         )
-        Text("27℃ ~ 30℃", fontSize = 20.sp)
+        Text(
+            "${tempMin.toInt()}℃ ~ ${tempMax.toInt()}℃",
+            fontSize = 15.sp,
+            modifier = Modifier.padding(end = 5.dp)
+        )
+        Text(skycon, fontSize = 15.sp)
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WeatherPreview() {
-    WeatherApiTestTheme {
-        LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
-            item { CurrentWeather() }
-            item { HourForecastList() }
-            item { DailyForecastList() }
+fun WeatherPage(modifier: Modifier, viewModel: MainViewModel) {
+    val weatherResult = viewModel.weatherData.collectAsState().value?.result
+    val realtime = weatherResult?.realtime
+    val hourly = weatherResult?.hourly
+    val daily = weatherResult?.daily
+    val keypoint = weatherResult?.forecastKeypoint
+    // val context = LocalContext.current
+    LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
+        item {
+            Button(onClick = {
+                viewModel.locationClient.startLocation()
+                Log.d(TAG, "button: startLocation invoke!")
+            }) {
+                Text(text = "get location")
+            }
+        } /* get location button */
+        item {
+            Button(onClick = {
+                viewModel.requestNewWeatherData()
+            }) {
+                Text(text = "send request")
+            }
+        } /* send request button */
+        item {
+            CurrentWeather(
+                realtime?.temperature ?: 32.toDouble(),
+                realtime?.skycon ?: "不知道",
+                keypoint ?: "啥都不知道呢"
+            )
         }
+        item { HourForecastList(hourly) }
+        item { DailyForecastList(daily) }
     }
 }
