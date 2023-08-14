@@ -1,4 +1,4 @@
-package com.example.weatherapitest
+package com.tomastu.iceweather
 
 import android.annotation.SuppressLint
 import android.app.Application

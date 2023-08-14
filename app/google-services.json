@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "417817703885",
+    "project_id": "weather-9db55",
+    "storage_bucket": "weather-9db55.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:417817703885:android:7769b5a18975f6c88dc084",
+        "android_client_info": {
+          "package_name": "com.tomastu.iceweather"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "417817703885-c5ofesi23ijt4c0bshiv9lasjv2mog68.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfIrTpuCkFnNfP4KnxXoAHvDMy0ea4vzo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "417817703885-c5ofesi23ijt4c0bshiv9lasjv2mog68.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

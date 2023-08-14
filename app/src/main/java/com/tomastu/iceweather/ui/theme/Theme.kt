@@ -1,4 +1,4 @@
-package com.example.weatherapitest.ui.theme
+package com.tomastu.iceweather.ui.theme
 
 import android.app.Activity
 import android.os.Build

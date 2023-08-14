@@ -1,4 +1,4 @@
-package com.example.weatherapitest;
+package com.tomastu.iceweather;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;

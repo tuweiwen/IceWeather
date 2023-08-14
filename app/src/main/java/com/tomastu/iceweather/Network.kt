@@ -1,4 +1,4 @@
-package com.example.weatherapitest
+package com.tomastu.iceweather
 
 import android.util.Log
 import retrofit2.Call
@@ -12,7 +12,7 @@ import kotlin.coroutines.suspendCoroutine
 
 private const val TAG = "Network.kt"
 
-private val _caiyunRetrofit = Retrofit.Builder()
+private val caiyunRetrofit = Retrofit.Builder()
     .baseUrl("https://api.caiyunapp.com/v2.5/qRAzNzgluiHbsTnJ/")
     .addConverterFactory(GsonConverterFactory.create())
     .build()
@@ -36,5 +36,5 @@ suspend fun <T> Call<T>.await(): T =
     }
 
 object Network {
-    fun getCaiyunService() = _caiyunRetrofit.create(CaiyunService::class.java)
+    fun getCaiyunService(): CaiyunService = caiyunRetrofit.create(CaiyunService::class.java)
 }

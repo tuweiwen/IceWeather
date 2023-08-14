@@ -1,4 +1,4 @@
-package com.example.weatherapitest
+package com.tomastu.iceweather
 
 import android.util.Log
 import android.widget.Toast
@@ -10,6 +10,7 @@ import com.amap.api.services.core.LatLonPoint
 import com.amap.api.services.geocoder.GeocodeSearch
 import com.amap.api.services.geocoder.RegeocodeQuery
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 private const val TAG = "MainViewModel"
@@ -24,7 +25,8 @@ class MainViewModel : ViewModel() {
         AMapLocationClient.updatePrivacyShow(WeatherApplication.context, true, true)
         AMapLocationClient.updatePrivacyAgree(WeatherApplication.context, true)
     }
-    val weatherData
+
+    val weatherData: StateFlow<WeatherData?>
         get() = _weatherData
 
     fun requestNewWeatherData() {
@@ -43,7 +45,7 @@ class MainViewModel : ViewModel() {
 
 
     // 高德地理搜索
-    val geoSearch = GeocodeSearch(WeatherApplication.context).apply {
+    private val geoSearch = GeocodeSearch(WeatherApplication.context).apply {
         // 搜索监听回调
         setOnGeocodeSearchListener(object : GeocodeSearch.OnGeocodeSearchListener {
             override fun onRegeocodeSearched(
@@ -73,14 +75,14 @@ class MainViewModel : ViewModel() {
     }
 
     // 高德定位Client参数
-    val options: AMapLocationClientOption = AMapLocationClientOption().apply {
-        // locationMode = AMapLocationClientOption.AMapLocationMode.Device_Sensors
+    private val options: AMapLocationClientOption = AMapLocationClientOption().apply {
+        locationMode = AMapLocationClientOption.AMapLocationMode.Device_Sensors
         isOnceLocation = true
         AMapLocationClientOption.setLocationProtocol(AMapLocationClientOption.AMapLocationProtocol.HTTPS)
     }
 
     // 高德定位Client
-    val locationClient: AMapLocationClient = AMapLocationClient(WeatherApplication.context).apply {
+    private val locationClient: AMapLocationClient = AMapLocationClient(WeatherApplication.context).apply {
         setLocationOption(options)
         // 设置定位Callback
         setLocationListener {
@@ -91,7 +93,7 @@ class MainViewModel : ViewModel() {
             val query = RegeocodeQuery(LatLonPoint(lat!!, lon!!), 100F, GeocodeSearch.AMAP)
             query.extensions = "all"
             // 进行异步搜索
-            Log.d(TAG, "setLocationListener: getFromLocationAsyn invoked!")
+            Log.d(TAG, "setLocationListener: getFromLocationAsync invoked!")
             geoSearch.getFromLocationAsyn(query)
             // 获取定位后，停止Client
             Log.d(TAG, "setLocationListener: stopLocation invoked!")

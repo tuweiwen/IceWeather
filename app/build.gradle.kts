@@ -2,14 +2,15 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
+    id("com.google.gms.google-services")
 }
 
 android {
-    namespace = "com.example.weatherapitest"
+    namespace = "com.tomastu.iceweather"
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "com.example.weatherapitest"
+        applicationId = "com.tomastu.iceweather"
         minSdk = 26
         targetSdk = 33
         versionCode = 1
@@ -62,6 +63,10 @@ dependencies {
     implementation(libs.material3)
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson.converter)
+    implementation(libs.data.store)
+    implementation(platform("com.google.firebase:firebase-bom:32.2.2"))
+    implementation(libs.play.services.ads)
+    implementation("com.google.firebase:firebase-analytics-ktx")
 //    implementation(libs.coroutine.core)
 //    implementation(libs.coroutine.android)
     implementation(files("libs/AMap2DMap_6.0.0_AMapSearch_9.5.0_AMapLocation_6.3.0_20230410.aar"))
@@ -72,4 +77,37 @@ dependencies {
     androidTestImplementation(libs.ui.test.junit4)
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)
+}
+
+//gradle.beforeProject {
+//    project.ext.set("hasTests", false)
+//}
+//
+//gradle.afterProject {
+//    if (project.ext.has("hasTests") && project.ext.get("hasTests") as Boolean) {
+//        val projectString = project.toString()
+//        tasks.register("test") {
+//            doLast {
+//                println("Running tests for $projectString")
+//            }
+//        }
+//    }
+//}
+
+gradle.beforeProject {
+    this.ext.set("hasTests", false)
+    println("invoke beforeProject callback! project: ${this.name}")
+}
+
+gradle.afterProject {
+    if (this.ext.has("hasTests") && this.ext.get("hasTests") as Boolean) {
+        val projectString = this.toString()
+        println("adding test tasks to $projectString")
+        tasks.register("test") {
+//            doLast {
+                println("running tests for $projectString")
+//            }
+        }
+    }
+    println("invoke afterProject callback! project: ${this.name}")
 }

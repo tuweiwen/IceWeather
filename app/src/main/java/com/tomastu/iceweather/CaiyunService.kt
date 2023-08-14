@@ -1,4 +1,4 @@
-package com.example.weatherapitest
+package com.tomastu.iceweather
 
 import retrofit2.Call
 import retrofit2.http.GET
