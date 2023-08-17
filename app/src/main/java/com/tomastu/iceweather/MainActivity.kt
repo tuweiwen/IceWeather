@@ -8,8 +8,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -27,11 +27,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
@@ -39,6 +41,7 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.tomastu.iceweather.ui.theme.WeatherApiTestTheme
+import com.tomastu.iceweather.jsonUtils.JsonName2Resource
 
 private const val TAG = "MainActivity"
 
@@ -64,25 +67,13 @@ class MainActivity : ComponentActivity() {
             Log.d(TAG, "AdMob status -> $status")
         }
 
-        // 权限检查
-        if (checkSelfPermission("android.permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_GRANTED) {
-            // permission granted -> do get position feature here
-            Log.d(TAG, "onCreate: get location permission!")
-        } else {
-            // permission denied -> use this to request location permission,
-            //                      and we will explain this later in article
-            if (checkSelfPermission("android.permission.ACCESS_COARSE_LOCATION") != PackageManager.PERMISSION_GRANTED) {
-                permissionRequestLauncher.launch("android.permission.ACCESS_FINE_LOCATION")
-                Log.d(TAG, "onCreate: don't get location permission!")
-            }
-        }
-
-        // 加载广告
-        val myAdUnitId = "ca-app-pub-9583057859081785/4173334363"
-        val testAdUnitId = "ca-app-pub-3940256099942544/2247696110"
+        // 配置AdMob行为
+        // val myAdUnitId = "ca-app-pub-9583057859081785/4173334363"
+        val testAdUnitId = "ca-app-pub-3940256099942544/2247696110"     // 广告测试ID
         adLoader =
             AdLoader.Builder(this, testAdUnitId)
                 .forNativeAd { nativeAd ->
+                    // 考虑在 ViewModel 中加载广告数据
                     // show native ad here
                     Log.d(
                         TAG, """
@@ -116,9 +107,10 @@ class MainActivity : ComponentActivity() {
                 .withAdListener(object : AdListener() {
                     override fun onAdFailedToLoad(p0: LoadAdError) {
                         // Handle the failure by logging, altering the UI, and so on.
-                        Toast.makeText(this@MainActivity, "add load failed!", Toast.LENGTH_SHORT)
+                        Toast.makeText(this@MainActivity, "ads load failed!", Toast.LENGTH_SHORT)
                             .show()
-                        Log.e(TAG, """
+                        Log.e(
+                            TAG, """
                            | p0.responseInfo -> ${p0.responseInfo}
                            | p0.code -> ${p0.code}
                            | p0.cause -> ${p0.cause}
@@ -136,6 +128,25 @@ class MainActivity : ComponentActivity() {
                 )
                 .build()
 
+        // 定位权限检查
+        if (checkSelfPermission("android.permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_GRANTED) {
+            // permission granted -> do get position feature here
+            Log.d(TAG, "onCreate: get location permission!")
+        } else {
+            // permission denied -> use this to request location permission,
+            //                      and we will explain this later in article
+            if (checkSelfPermission("android.permission.ACCESS_COARSE_LOCATION") != PackageManager.PERMISSION_GRANTED) {
+                permissionRequestLauncher.launch("android.permission.ACCESS_FINE_LOCATION")
+                Log.d(TAG, "onCreate: don't get location permission!")
+            }
+        }
+
+        Log.e(TAG, "SHA1: ${test.sHA1(this)}")
+
+        // 首次请求定位信息
+        viewModel.getPositionThenGetWeather()
+        // 加载广告
+        adLoader.loadAd(AdRequest.Builder().build())
 
         setContent {
             WeatherApiTestTheme {
@@ -144,8 +155,8 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        viewModel.requestNewWeatherData()
-        adLoader.loadAd(AdRequest.Builder().build())
+//        viewModel.requestNewWeatherData()
+
     }
 }
 
@@ -153,47 +164,44 @@ class MainActivity : ComponentActivity() {
 fun CurrentWeather(
     temperature: Double,
     weather: String,
-    keypoint: String
+    weatherIconId: Int,
+    keypoint: String,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.padding(top = 30.dp, bottom = 30.dp)
     ) {
-        Image(
-            bitmap = ImageBitmap.imageResource(R.drawable.test_photo),
-            contentDescription = null,
-            modifier = Modifier.width(100.dp)
-        )
+        Icon(painter = painterResource(id = weatherIconId), contentDescription = weather)
+
         Row(modifier = Modifier.padding(top = 40.dp, bottom = 20.dp)) {
             Text("${temperature.toInt()}℃", fontSize = 25.sp)
             Text("|", modifier = Modifier.padding(start = 30.dp, end = 30.dp), fontSize = 25.sp)
             Text(weather, fontSize = 25.sp)
         }
+
         Text(keypoint, fontSize = 15.sp)
     }
 }
 
 @Composable
 fun HourForecastList(hourlyWeather: WeatherData.Result.Hourly?) {
-    LazyRow {
-        item {
-            HourForecastItem(
-                Modifier.padding(start = 20.dp, end = 20.dp),
-                temperature = hourlyWeather?.temperature?.get(0)?.value ?: 34.toDouble(),
-                time = hourlyWeather?.temperature?.get(0)?.datetime?.removeRange(0..10)
-                    ?.removeRange(5..10) ?: "12:00",
-                skycon = hourlyWeather?.skycon?.get(0)?.value ?: "不知道"
-            )
-        }
-        repeat(11) { index ->
+    LazyRow(contentPadding = PaddingValues(start = 20.dp)) {
+        repeat(12) { index ->
             item {
                 HourForecastItem(
-                    Modifier.padding(end = 20.dp),
-                    temperature = hourlyWeather?.temperature?.get(index + 1)?.value
+                    modifier = Modifier.padding(end = 20.dp).width(118.dp),
+                    temperature = hourlyWeather?.temperature?.get(index)?.value
                         ?: 34.toDouble(),
-                    time = hourlyWeather?.temperature?.get(index + 1)?.datetime?.removeRange(0..10)
+                    time = hourlyWeather?.temperature?.get(index)?.datetime?.removeRange(0..10)
                         ?.removeRange(5..10) ?: "12:00",
-                    skycon = hourlyWeather?.skycon?.get(index + 1)?.value ?: "不知道"
+                    weather = JsonName2Resource.transform2String(
+                        hourlyWeather?.skycon?.get(index)?.value ?: "weather_unknow"
+                    ),
+                    weatherIconId = JsonName2Resource.transform2DrawableId(
+                        hourlyWeather?.skycon?.get(
+                            index
+                        )?.value ?: "CLEAR_DAY"
+                    )
                 )
             }
         }
@@ -203,9 +211,10 @@ fun HourForecastList(hourlyWeather: WeatherData.Result.Hourly?) {
 @Composable
 fun HourForecastItem(
     modifier: Modifier,
-    time: String = "12:00",
+    time: String,
     temperature: Double = 34.toDouble(),
-    skycon: String
+    weather: String,
+    weatherIconId: Int,
 ) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
@@ -213,41 +222,41 @@ fun HourForecastItem(
             fontSize = 15.sp,
             modifier = Modifier.padding(bottom = 5.dp)
         )
-        Image(
-            bitmap = ImageBitmap.imageResource(id = R.drawable.test_photo),
-            contentDescription = null,
-            modifier = Modifier.width(50.dp)
+
+        Icon(
+            painter = painterResource(id = weatherIconId),
+            contentDescription = weather,
+            modifier = Modifier.width(35.dp)
         )
+
         Text(
-            text = skycon,
+            text = weather,
             fontSize = 15.sp,
             modifier = Modifier.padding(top = 5.dp, bottom = 5.dp)
         )
+
         Text(text = "${temperature.toInt()}℃", fontSize = 15.sp)
     }
 }
 
 @Composable
 fun DailyForecastList(dailyWeather: WeatherData.Result.Daily?) {
-    Column {
-        DailyForecastItem(
-            modifier = Modifier
-                .padding(top = 20.dp, bottom = 20.dp)
-                .align(Alignment.CenterHorizontally),
-            tempMax = dailyWeather?.temperature?.get(0)?.max ?: 12.toDouble(),
-            tempMin = dailyWeather?.temperature?.get(0)?.min ?: 23.toDouble(),
-            skycon = dailyWeather?.skycon?.get(0)?.value ?: "不知道",
-            date = dailyWeather?.temperature?.get(0)?.date?.removeRange(0..4)?.removeRange(5..16)
-                ?: "7-20"
-        )
-        repeat(4) { index ->
+    Column(modifier = Modifier.padding(top = 20.dp)) {
+        repeat(5) { index ->
             DailyForecastItem(
                 modifier = Modifier.padding(bottom = 20.dp),
-                tempMax = dailyWeather?.temperature?.get(index + 1)?.max ?: 12.toDouble(),
-                tempMin = dailyWeather?.temperature?.get(index + 1)?.min ?: 23.toDouble(),
-                skycon = dailyWeather?.skycon?.get(index + 1)?.value ?: "不知道",
-                date = dailyWeather?.temperature?.get(index + 1)?.date?.removeRange(0..4)
-                    ?.removeRange(5..16) ?: "7-20"
+                tempMax = dailyWeather?.temperature?.get(index)?.max ?: 12.toDouble(),
+                tempMin = dailyWeather?.temperature?.get(index)?.min ?: 23.toDouble(),
+                weather = JsonName2Resource.transform2String(
+                    dailyWeather?.skycon?.get(index)?.value ?: "weather_unknow"
+                ),
+                weatherIconId = JsonName2Resource.transform2DrawableId(
+                    dailyWeather?.skycon?.get(
+                        index
+                    )?.value ?: "CLEAR_DAY"
+                ),
+                date = dailyWeather?.temperature?.get(index)?.date?.removeRange(0..4)
+                    ?.removeRange(5..16) ?: "6-18"
             )
         }
     }
@@ -258,34 +267,38 @@ fun DailyForecastItem(
     modifier: Modifier,
     tempMax: Double,
     tempMin: Double,
-    skycon: String,
-    date: String
+    weather: String,
+    weatherIconId: Int,
+    date: String,
 ) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(date, fontSize = 15.sp)
-        Image(
-            bitmap = ImageBitmap.imageResource(id = R.drawable.test_photo),
-            contentDescription = null,
+
+        Icon(
+            painter = painterResource(id = weatherIconId),
+            contentDescription = weather,
             modifier = Modifier
                 .height(50.dp)
                 .padding(start = 10.dp, end = 10.dp)
         )
+
         Text(
             "${tempMin.toInt()}℃ ~ ${tempMax.toInt()}℃",
             fontSize = 15.sp,
             modifier = Modifier.padding(end = 5.dp)
         )
-        Text(skycon, fontSize = 15.sp)
+
+        Text(weather, fontSize = 15.sp)
     }
 }
 
 @Composable
 fun WeatherPage(
     modifier: Modifier,
-    viewModel: MainViewModel
+    viewModel: MainViewModel,
 ) {
     val weatherData by viewModel.weatherData.collectAsState()
     val weatherResult = weatherData?.result
@@ -293,36 +306,30 @@ fun WeatherPage(
     val hourly = weatherResult?.hourly
     val daily = weatherResult?.daily
     val keypoint = weatherResult?.forecastKeypoint
+
+    val isLoading by viewModel.isLoading.collectAsState()
+    val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isLoading)
+
     // val context = LocalContext.current
     Surface(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
     ) {
-        LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
-            item {
-                Button(onClick = {
-                    viewModel.getPosition()
-                    Log.d(TAG, "button: startLocation invoke!")
-                }) {
-                    Text(text = "get location")
+        SwipeRefresh(state = swipeRefreshState, onRefresh = { viewModel.getPositionThenGetWeather() }) {
+            LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
+                item {
+                    CurrentWeather(
+                        temperature = realtime?.temperature ?: 32.toDouble(),
+                        weather = JsonName2Resource.transform2String(realtime?.skycon ?: "weather_unknow"),
+                        weatherIconId = JsonName2Resource.transform2DrawableId(
+                            realtime?.skycon ?: "CLEAR_DAY"
+                        ),
+                        keypoint = keypoint ?: stringResource(id = R.string.keypoint_unknow)
+                    )
                 }
-            } /* get location button */
-            item {
-                Button(onClick = {
-                    viewModel.requestNewWeatherData()
-                }) {
-                    Text(text = "send request")
-                }
-            } /* send request button */
-            item {
-                CurrentWeather(
-                    realtime?.temperature ?: 32.toDouble(),
-                    realtime?.skycon ?: "不知道",
-                    keypoint ?: "啥都不知道呢"
-                )
+                item { HourForecastList(hourly) }
+                item { DailyForecastList(daily) }
             }
-            item { HourForecastList(hourly) }
-            item { DailyForecastList(daily) }
         }
     }
 }

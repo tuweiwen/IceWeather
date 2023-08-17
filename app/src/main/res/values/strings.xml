@@ -1,3 +1,25 @@
 <resources>
     <string name="app_name">Ice Weather</string>
+    <string name="CLEAR_DAY">CLEAR DAY</string>
+    <string name="CLEAR_NIGHT">CLEAR DAY</string>
+    <string name="PARTLY_CLOUDY_DAY">PARTLY CLOUDY</string>
+    <string name="PARTLY_CLOUDY_NIGHT">PARTLY CLOUDY</string>
+    <string name="CLOUDY">CLOUDY</string>
+    <string name="LIGHT_HAZE">LIGHT HAZE</string>
+    <string name="MODERATE_HAZE">MODERATE HAZE</string>
+    <string name="HEAVY_HAZE">HEAVY HAZE</string>
+    <string name="LIGHT_RAIN">LIGHT RAIN</string>
+    <string name="MODERATE_RAIN">MODERATE RAIN</string>
+    <string name="HEAVY_RAIN">HEAVY RAIN</string>
+    <string name="STORM_RAIN">STORM RAIN</string>
+    <string name="FOG">FOG</string>
+    <string name="LIGHT_SNOW">LIGHT SNOW</string>
+    <string name="MODERATE_SNOW">MODERATE SNOW</string>
+    <string name="HEAVY_SNOW">HEAVY SNOW</string>
+    <string name="STORM_SNOW">STORM SNOW</string>
+    <string name="DUST">DUST</string>
+    <string name="SAND">SAND</string>
+    <string name="WIND">WIND</string>
+    <string name="weather_unknow">UNKNOW</string>
+    <string name="keypoint_unknow">UNKNOW</string>
 </resources>
