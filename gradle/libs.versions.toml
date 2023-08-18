@@ -37,8 +37,6 @@ data-store = { group = "androidx.datastore", name = "datastore-preferences", ver
 viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version = "2.6.1" }
 accompanist-swiperefresh = { group = "com.google.accompanist", name = "accompanist-swiperefresh", version = "0.27.0" }
 fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version = "1.6.1" }
-hms-location = { group = "com.huawei.hms", name = "location", version = "6.9.0.300" }
-agcp = { group = "com.huawei.agconnect", name = "agcp", version = "1.9.1.300" }
 #coroutine-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutine" }
 #coroutine-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutine" }
 

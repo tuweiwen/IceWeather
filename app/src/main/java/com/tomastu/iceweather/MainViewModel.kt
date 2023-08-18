@@ -9,6 +9,10 @@ import com.amap.api.location.AMapLocationClientOption
 import com.amap.api.services.core.LatLonPoint
 import com.amap.api.services.geocoder.GeocodeSearch
 import com.amap.api.services.geocoder.RegeocodeQuery
+import com.huawei.hmf.tasks.OnSuccessListener
+import com.huawei.hms.location.LocationRequest
+import com.huawei.hms.location.LocationServices
+import com.huawei.hms.location.LocationSettingsRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -87,30 +91,31 @@ class MainViewModel : ViewModel() {
     }
 
     // 高德定位Client
-    private val locationClient: AMapLocationClient = AMapLocationClient(WeatherApplication.context).apply {
-        setLocationOption(options)
-        // 设置定位Callback（获取到定位后的行为）
-        setLocationListener {
-            Log.d(TAG, "setLocationListener: $it")
-            lat = it.latitude
-            lon = it.longitude
-            requestNewWeatherData()
-            // fixme : 以下的定位无法返回值
-            // 搜索查询参数
-            val query = RegeocodeQuery(LatLonPoint(lat!!, lon!!), 100F, GeocodeSearch.AMAP)
-            query.extensions = "all"
-            // 进行异步搜索
-            Log.d(TAG, "setLocationListener: getFromLocationAsync invoked!")
-            geoSearch.getFromLocationAsyn(query)
-            // 获取定位后，停止Client
-            Log.d(TAG, "setLocationListener: stopLocation invoked!")
-            this.stopLocation()
-            _isLoading.value = false
+    private val locationClient: AMapLocationClient =
+        AMapLocationClient(WeatherApplication.context).apply {
+            setLocationOption(options)
+            // 设置定位Callback（获取到定位后的行为）
+            setLocationListener {
+                Log.d(TAG, "setLocationListener: $it")
+                lat = it.latitude
+                lon = it.longitude
+                requestNewWeatherData()
+                // fixme : 以下的定位无法返回值
+                // 搜索查询参数
+                val query = RegeocodeQuery(LatLonPoint(lat!!, lon!!), 100F, GeocodeSearch.AMAP)
+                query.extensions = "all"
+                // 进行异步搜索
+                Log.d(TAG, "setLocationListener: getFromLocationAsync invoked!")
+                geoSearch.getFromLocationAsyn(query)
+                // 获取定位后，停止Client
+                Log.d(TAG, "setLocationListener: stopLocation invoked!")
+                this.stopLocation()
+                _isLoading.value = false
+            }
         }
-    }
 
     // todo : 需要考虑英语条件下请求不同的语言（keypoint）
-    fun getPositionThenGetWeather()  {
+    fun getPositionAndGetWeather() {
         _isLoading.value = true
         locationClient.startLocation()
 

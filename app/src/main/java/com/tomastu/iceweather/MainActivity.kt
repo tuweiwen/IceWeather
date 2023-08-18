@@ -132,6 +132,9 @@ class MainActivity : ComponentActivity() {
         if (checkSelfPermission("android.permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_GRANTED) {
             // permission granted -> do get position feature here
             Log.d(TAG, "onCreate: get location permission!")
+
+            // 首次请求定位信息
+            viewModel.getPositionAndGetWeather()
         } else {
             // permission denied -> use this to request location permission,
             //                      and we will explain this later in article
@@ -143,8 +146,6 @@ class MainActivity : ComponentActivity() {
 
         Log.e(TAG, "SHA1: ${test.sHA1(this)}")
 
-        // 首次请求定位信息
-        viewModel.getPositionThenGetWeather()
         // 加载广告
         adLoader.loadAd(AdRequest.Builder().build())
 
@@ -154,9 +155,6 @@ class MainActivity : ComponentActivity() {
                 WeatherPage(modifier = Modifier.fillMaxWidth(), viewModel = viewModel)
             }
         }
-
-//        viewModel.requestNewWeatherData()
-
     }
 }
 
@@ -315,7 +313,7 @@ fun WeatherPage(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
     ) {
-        SwipeRefresh(state = swipeRefreshState, onRefresh = { viewModel.getPositionThenGetWeather() }) {
+        SwipeRefresh(state = swipeRefreshState, onRefresh = { viewModel.getPositionAndGetWeather() }) {
             LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
                 item {
                     CurrentWeather(
@@ -332,4 +330,9 @@ fun WeatherPage(
             }
         }
     }
+}
+
+@Composable
+fun hourlyNew() {
+
 }

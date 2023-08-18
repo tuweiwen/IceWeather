@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
     id("com.google.gms.google-services")
-    id("com.huawei.agconnect")
 }
 
 android {
@@ -50,15 +49,6 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    signingConfigs {
-        create("release") {
-            storeFile = File("ice_weather_key.jks")
-            storePassword = "20010613abc"
-            keyAlias = "key0"
-            keyPassword = "20010613abc"
-            enableV2Signing = true
-        }
-    }
 }
 
 dependencies {
@@ -83,7 +73,6 @@ dependencies {
 //    implementation(libs.coroutine.core)
 //    implementation(libs.coroutine.android)
     implementation(files("libs/AMap2DMap_6.0.0_AMapSearch_9.5.0_AMapLocation_6.3.0_20230410.aar"))
-    implementation(libs.hms.location)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -92,21 +81,6 @@ dependencies {
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)
 }
-
-//gradle.beforeProject {
-//    project.ext.set("hasTests", false)
-//}
-//
-//gradle.afterProject {
-//    if (project.ext.has("hasTests") && project.ext.get("hasTests") as Boolean) {
-//        val projectString = project.toString()
-//        tasks.register("test") {
-//            doLast {
-//                println("Running tests for $projectString")
-//            }
-//        }
-//    }
-//}
 
 gradle.beforeProject {
     this.ext.set("hasTests", false)
