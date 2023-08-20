@@ -20,10 +20,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
@@ -321,11 +326,13 @@ fun DailyForecastItem(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeatherPage(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
 ) {
+    val road by viewModel.road.collectAsState()
     val weatherData by viewModel.weatherData.collectAsState()
     val weatherResult = weatherData?.result
     val realtime = weatherResult?.realtime
@@ -340,24 +347,40 @@ fun WeatherPage(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
     ) {
-        SwipeRefresh(
-            state = swipeRefreshState,
-            onRefresh = { viewModel.getPositionAndGetWeather() }) {
-            LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
-                item {
-                    CurrentWeather(
-                        temperature = realtime?.temperature ?: 32.toDouble(),
-                        weather = JsonName2Resource.transform2String(
-                            realtime?.skycon ?: "weather_unknow"
-                        ),
-                        weatherIconId = JsonName2Resource.transform2DrawableId(
-                            realtime?.skycon ?: "CLEAR_DAY"
-                        ),
-                        keypoint = keypoint ?: stringResource(id = R.string.keypoint_unknow)
+        Scaffold(topBar = {
+            CenterAlignedTopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(MaterialTheme.colorScheme.primary),
+                title = {
+                    Text(
+                        modifier = Modifier,
+                        text = road,
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
-                item { HourForecastList(hourlyWeather = hourly) }
-                item { DailyForecastList(dailyWeather = daily) }
+            )
+        }) {
+            SwipeRefresh(
+                modifier = Modifier.padding(it),
+                state = swipeRefreshState,
+                onRefresh = { viewModel.getPositionAndGetWeather() }) {
+                LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
+                    item {
+                        CurrentWeather(
+                            temperature = realtime?.temperature ?: 32.toDouble(),
+                            weather = JsonName2Resource.transform2String(
+                                realtime?.skycon ?: "weather_unknow"
+                            ),
+                            weatherIconId = JsonName2Resource.transform2DrawableId(
+                                realtime?.skycon ?: "CLEAR_DAY"
+                            ),
+                            keypoint = keypoint ?: stringResource(id = R.string.keypoint_unknow)
+                        )
+                    }
+                    item { HourForecastList(hourlyWeather = hourly) }
+                    item { DailyForecastList(dailyWeather = daily) }
+                }
             }
         }
     }

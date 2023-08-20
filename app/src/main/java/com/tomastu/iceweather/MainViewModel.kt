@@ -24,8 +24,14 @@ class MainViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     private var currentLanguage = Locale.getDefault().language
     private var currentCountry = Locale.getDefault().country
+    private var _road = MutableStateFlow(WeatherApplication.context.getString(R.string.unknow_position))
 
     val isLoading = _isLoading.asStateFlow()
+
+    val road: StateFlow<String>
+        get() = _road
+    val weatherData: StateFlow<WeatherData?>
+        get() = _weatherData
 
     init {
         // todo : 高德隐私合规，后续需放在首次开屏
@@ -38,18 +44,17 @@ class MainViewModel : ViewModel() {
         currentCountry = country
     }
 
-    val weatherData: StateFlow<WeatherData?>
-        get() = _weatherData
 
     private fun requestNewWeatherData() {
         viewModelScope.launch {
             if (lat != null && lon != null) {
                 Log.d(TAG, "lon -> $lon, lat -> $lat")
-                Log.d(TAG, "currentLanguage -> $currentLanguage")
-                Log.d(TAG, "currentCountry -> $currentCountry")
+                Log.d(TAG, "currentLanguage -> $currentLanguage, currentCountry -> $currentCountry")
                 when (currentLanguage) {
                     "zh", "en" -> {}
-                    else -> { currentLanguage = "en" }
+                    else -> {
+                        currentLanguage = "en"
+                    }
                 }
                 when (currentCountry) {
                     "TW", "CN", "US", "GB" -> {}
@@ -57,11 +62,15 @@ class MainViewModel : ViewModel() {
                         // 中文语言地区判断，新加坡使用和大陆一致的简体，香港和澳门使用和台湾一致的繁体
                         if (currentLanguage.equals("zh")) {
                             when (currentCountry) {
-                                "SG" -> { currentCountry = "CN" }
-                                "HK", "MO" -> {currentCountry = "TW"}
+                                "SG" -> {
+                                    currentCountry = "CN"
+                                }
+
+                                "HK", "MO" -> {
+                                    currentCountry = "TW"
+                                }
                             }
-                        }
-                        else {
+                        } else {
                             currentCountry = "US"
                         }
                     }
@@ -76,7 +85,7 @@ class MainViewModel : ViewModel() {
             } else {
                 Toast.makeText(
                     WeatherApplication.context,
-                    "position is missing! get position first!",
+                    "",
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -93,15 +102,10 @@ class MainViewModel : ViewModel() {
                 code: Int
             ) {
                 when (code) {
-                    1000 -> Log.d(
-                        TAG,
-                        "setOnGeocodeSearchListener: result is ${result!!.regeocodeAddress.formatAddress}"
-                    )
-
-                    else -> Log.d(
-                        TAG,
-                        "setOnGeocodeSearchListener: failed! code is $code"
-                    )
+                    1000 -> {
+                        _road.value = result!!.regeocodeAddress.roads[0].name
+                    }
+                    else -> Log.d(TAG, "deGeo failed! code is $code")
                 }
             }
 
@@ -118,6 +122,8 @@ class MainViewModel : ViewModel() {
     private val options: AMapLocationClientOption = AMapLocationClientOption().apply {
         locationMode = AMapLocationClientOption.AMapLocationMode.Device_Sensors
         isOnceLocation = true
+        isNeedAddress = true
+        isMockEnable = true
         AMapLocationClientOption.setLocationProtocol(AMapLocationClientOption.AMapLocationProtocol.HTTPS)
     }
 
@@ -127,19 +133,16 @@ class MainViewModel : ViewModel() {
             setLocationOption(options)
             // 设置定位Callback（获取到定位后的行为）
             setLocationListener {
-                Log.d(TAG, "setLocationListener: $it")
+                Log.d(TAG, "setLocationListener callback result -> $it")
                 lat = it.latitude
                 lon = it.longitude
                 requestNewWeatherData()
-                // fixme : 以下的定位无法返回值
                 // 搜索查询参数
                 val query = RegeocodeQuery(LatLonPoint(lat!!, lon!!), 100F, GeocodeSearch.AMAP)
                 query.extensions = "all"
                 // 进行异步搜索
-                Log.d(TAG, "setLocationListener: getFromLocationAsync invoked!")
                 geoSearch.getFromLocationAsyn(query)
                 // 获取定位后，停止Client
-                Log.d(TAG, "setLocationListener: stopLocation invoked!")
                 this.stopLocation()
                 _isLoading.value = false
             }

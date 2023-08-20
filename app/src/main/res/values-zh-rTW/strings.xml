@@ -23,4 +23,6 @@
     <string name="WIND">大風</string>
     <string name="weather_unknow">未知</string>
     <string name="keypoint_unknow">啥都不知道呢</string>
+    <string name="position_missing_hint">位置信息缺失，請嘗試下拉刷新</string>
+    <string name="unknow_position">未知地點</string>
 </resources>

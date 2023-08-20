@@ -7,5 +7,9 @@ import retrofit2.http.Query
 
 interface CaiyunService {
     @GET("{lon},{lat}/weather.json")
-    fun getWeather(@Path("lon") lon: Double, @Path("lat") lat: Double, @Query("lang") language: String): Call<WeatherData>
+    fun getWeather(
+        @Path("lon") lon: Double,
+        @Path("lat") lat: Double,
+        @Query("lang") language: String
+    ): Call<WeatherData>
 }

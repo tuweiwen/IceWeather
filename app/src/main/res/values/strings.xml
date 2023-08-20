@@ -22,4 +22,6 @@
     <string name="WIND">WIND</string>
     <string name="weather_unknow">UNKNOW</string>
     <string name="keypoint_unknow">UNKNOW</string>
+    <string name="position_missing_hint">Can\'t get your location, please scroll down and refresh</string>
+    <string name="unknow_position">UNKNOW POSITION</string>
 </resources>
