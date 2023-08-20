@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">冰棒天氣</string>
+    <string name="CLEAR_DAY">晴</string>
+    <string name="CLEAR_NIGHT">晴</string>
+    <string name="PARTLY_CLOUDY_DAY">多雲</string>
+    <string name="PARTLY_CLOUDY_NIGHT">多雲</string>
+    <string name="CLOUDY">陰</string>
+    <string name="LIGHT_HAZE">輕度霧霾</string>
+    <string name="MODERATE_HAZE">中度霧霾</string>
+    <string name="HEAVY_HAZE">重度霧霾</string>
+    <string name="LIGHT_RAIN">小雨</string>
+    <string name="MODERATE_RAIN">中雨</string>
+    <string name="HEAVY_RAIN">大雨</string>
+    <string name="STORM_RAIN">暴雨</string>
+    <string name="FOG">霧</string>
+    <string name="LIGHT_SNOW">小雪</string>
+    <string name="MODERATE_SNOW">中雪</string>
+    <string name="HEAVY_SNOW">中雪</string>
+    <string name="STORM_SNOW">暴雪</string>
+    <string name="DUST">浮塵</string>
+    <string name="SAND">沙塵</string>
+    <string name="WIND">大風</string>
+    <string name="weather_unknow">未知</string>
+    <string name="keypoint_unknow">啥都不知道呢</string>
+</resources>

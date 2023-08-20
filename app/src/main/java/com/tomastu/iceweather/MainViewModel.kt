@@ -9,14 +9,11 @@ import com.amap.api.location.AMapLocationClientOption
 import com.amap.api.services.core.LatLonPoint
 import com.amap.api.services.geocoder.GeocodeSearch
 import com.amap.api.services.geocoder.RegeocodeQuery
-import com.huawei.hmf.tasks.OnSuccessListener
-import com.huawei.hms.location.LocationRequest
-import com.huawei.hms.location.LocationServices
-import com.huawei.hms.location.LocationSettingsRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 private const val TAG = "MainViewModel"
 
@@ -25,6 +22,8 @@ class MainViewModel : ViewModel() {
     private var lat: Double? = null
     private var lon: Double? = null
     private val _isLoading = MutableStateFlow(false)
+    private var currentLanguage = Locale.getDefault().language
+    private var currentCountry = Locale.getDefault().country
 
     val isLoading = _isLoading.asStateFlow()
 
@@ -34,6 +33,11 @@ class MainViewModel : ViewModel() {
         AMapLocationClient.updatePrivacyAgree(WeatherApplication.context, true)
     }
 
+    fun updateLanguageAndCountry(language: String, country: String) {
+        currentLanguage = language
+        currentCountry = country
+    }
+
     val weatherData: StateFlow<WeatherData?>
         get() = _weatherData
 
@@ -41,7 +45,34 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch {
             if (lat != null && lon != null) {
                 Log.d(TAG, "lon -> $lon, lat -> $lat")
-                _weatherData.value = Network.getCaiyunService().getWeather(lon!!, lat!!).await()
+                Log.d(TAG, "currentLanguage -> $currentLanguage")
+                Log.d(TAG, "currentCountry -> $currentCountry")
+                when (currentLanguage) {
+                    "zh", "en" -> {}
+                    else -> { currentLanguage = "en" }
+                }
+                when (currentCountry) {
+                    "TW", "CN", "US", "GB" -> {}
+                    else -> {
+                        // 中文语言地区判断，新加坡使用和大陆一致的简体，香港和澳门使用和台湾一致的繁体
+                        if (currentLanguage.equals("zh")) {
+                            when (currentCountry) {
+                                "SG" -> { currentCountry = "CN" }
+                                "HK", "MO" -> {currentCountry = "TW"}
+                            }
+                        }
+                        else {
+                            currentCountry = "US"
+                        }
+                    }
+                }
+                val countryCode = StringBuilder()
+                    .append(currentLanguage)
+                    .append("_")
+                    .append(currentCountry)
+                    .toString()
+                _weatherData.value =
+                    Network.getCaiyunService().getWeather(lon!!, lat!!, countryCode).await()
             } else {
                 Toast.makeText(
                     WeatherApplication.context,
@@ -114,7 +145,6 @@ class MainViewModel : ViewModel() {
             }
         }
 
-    // todo : 需要考虑英语条件下请求不同的语言（keypoint）
     fun getPositionAndGetWeather() {
         _isLoading.value = true
         locationClient.startLocation()

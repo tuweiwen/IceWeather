@@ -22,7 +22,7 @@ suspend fun <T> Call<T>.await(): T =
         enqueue(object : Callback<T> {
             override fun onResponse(call: Call<T>, response: Response<T>) {
                 if (response.body() != null) {
-                    Log.e(TAG, "onResponse: ${response.body()}")
+                    Log.d(TAG, "onResponse: ${response.body()}")
                     continuation.resume(response.body()!!)
                 } else {
                     continuation.resumeWithException(RuntimeException("response is null"))

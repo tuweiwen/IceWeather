@@ -1,6 +1,7 @@
 package com.tomastu.iceweather
 
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -11,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -40,17 +42,21 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.nativead.NativeAdOptions
-import com.tomastu.iceweather.ui.theme.WeatherApiTestTheme
 import com.tomastu.iceweather.jsonUtils.JsonName2Resource
+import com.tomastu.iceweather.ui.theme.WeatherApiTestTheme
 
 private const val TAG = "MainActivity"
 
 class MainActivity : ComponentActivity() {
     private lateinit var adLoader: AdLoader
+    private lateinit var viewModel: MainViewModel
     private val permissionRequestLauncher: ActivityResultLauncher<String> =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
                 Log.d(TAG, "onCreate: permission success!")
+                if (::viewModel.isInitialized) {
+                    viewModel.getPositionAndGetWeather()
+                }
             } else {
                 Log.d(TAG, "onCreate: permission failed!")
             }
@@ -60,7 +66,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // 初始化ViewModel
-        val viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
         // 初始化AdMob
         MobileAds.initialize(this) { status ->
@@ -109,7 +115,7 @@ class MainActivity : ComponentActivity() {
                         // Handle the failure by logging, altering the UI, and so on.
                         Toast.makeText(this@MainActivity, "ads load failed!", Toast.LENGTH_SHORT)
                             .show()
-                        Log.e(
+                        Log.d(
                             TAG, """
                            | p0.responseInfo -> ${p0.responseInfo}
                            | p0.code -> ${p0.code}
@@ -144,7 +150,7 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        Log.e(TAG, "SHA1: ${test.sHA1(this)}")
+        Log.d(TAG, "SHA1: ${test.sHA1(this)}")
 
         // 加载广告
         adLoader.loadAd(AdRequest.Builder().build())
@@ -156,10 +162,20 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        val locales = newConfig.locales[0] // 这里返回的是整个系统中配置过的所有语言，这里只使用第一个
+        if (::viewModel.isInitialized) {
+            viewModel.updateLanguageAndCountry(locales.language, locales.country)
+        }
+    }
 }
 
 @Composable
 fun CurrentWeather(
+    modifier: Modifier = Modifier,
     temperature: Double,
     weather: String,
     weatherIconId: Int,
@@ -167,7 +183,7 @@ fun CurrentWeather(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(top = 30.dp, bottom = 30.dp)
+        modifier = modifier.padding(top = 30.dp, bottom = 30.dp)
     ) {
         Icon(painter = painterResource(id = weatherIconId), contentDescription = weather)
 
@@ -182,12 +198,20 @@ fun CurrentWeather(
 }
 
 @Composable
-fun HourForecastList(hourlyWeather: WeatherData.Result.Hourly?) {
-    LazyRow(contentPadding = PaddingValues(start = 20.dp)) {
+fun HourForecastList(
+    modifier: Modifier = Modifier,
+    hourlyWeather: WeatherData.Result.Hourly?
+) {
+    LazyRow(
+        modifier = modifier,
+        contentPadding = PaddingValues(start = 20.dp)
+    ) {
         repeat(12) { index ->
             item {
                 HourForecastItem(
-                    modifier = Modifier.padding(end = 20.dp).width(118.dp),
+                    modifier = Modifier
+                        .padding(end = 20.dp)
+                        .width(118.dp),
                     temperature = hourlyWeather?.temperature?.get(index)?.value
                         ?: 34.toDouble(),
                     time = hourlyWeather?.temperature?.get(index)?.datetime?.removeRange(0..10)
@@ -208,7 +232,7 @@ fun HourForecastList(hourlyWeather: WeatherData.Result.Hourly?) {
 
 @Composable
 fun HourForecastItem(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     time: String,
     temperature: Double = 34.toDouble(),
     weather: String,
@@ -238,8 +262,11 @@ fun HourForecastItem(
 }
 
 @Composable
-fun DailyForecastList(dailyWeather: WeatherData.Result.Daily?) {
-    Column(modifier = Modifier.padding(top = 20.dp)) {
+fun DailyForecastList(
+    modifier: Modifier = Modifier,
+    dailyWeather: WeatherData.Result.Daily?
+) {
+    Column(modifier = modifier.padding(top = 20.dp)) {
         repeat(5) { index ->
             DailyForecastItem(
                 modifier = Modifier.padding(bottom = 20.dp),
@@ -262,7 +289,7 @@ fun DailyForecastList(dailyWeather: WeatherData.Result.Daily?) {
 
 @Composable
 fun DailyForecastItem(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     tempMax: Double,
     tempMin: Double,
     weather: String,
@@ -280,6 +307,7 @@ fun DailyForecastItem(
             contentDescription = weather,
             modifier = Modifier
                 .height(50.dp)
+                .aspectRatio(1f)
                 .padding(start = 10.dp, end = 10.dp)
         )
 
@@ -295,7 +323,7 @@ fun DailyForecastItem(
 
 @Composable
 fun WeatherPage(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     viewModel: MainViewModel,
 ) {
     val weatherData by viewModel.weatherData.collectAsState()
@@ -308,31 +336,39 @@ fun WeatherPage(
     val isLoading by viewModel.isLoading.collectAsState()
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isLoading)
 
-    // val context = LocalContext.current
     Surface(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
     ) {
-        SwipeRefresh(state = swipeRefreshState, onRefresh = { viewModel.getPositionAndGetWeather() }) {
+        SwipeRefresh(
+            state = swipeRefreshState,
+            onRefresh = { viewModel.getPositionAndGetWeather() }) {
             LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
                 item {
                     CurrentWeather(
                         temperature = realtime?.temperature ?: 32.toDouble(),
-                        weather = JsonName2Resource.transform2String(realtime?.skycon ?: "weather_unknow"),
+                        weather = JsonName2Resource.transform2String(
+                            realtime?.skycon ?: "weather_unknow"
+                        ),
                         weatherIconId = JsonName2Resource.transform2DrawableId(
                             realtime?.skycon ?: "CLEAR_DAY"
                         ),
                         keypoint = keypoint ?: stringResource(id = R.string.keypoint_unknow)
                     )
                 }
-                item { HourForecastList(hourly) }
-                item { DailyForecastList(daily) }
+                item { HourForecastList(hourlyWeather = hourly) }
+                item { DailyForecastList(dailyWeather = daily) }
             }
         }
     }
 }
 
 @Composable
-fun hourlyNew() {
+fun HourlyLineGraph(
+    modifier: Modifier = Modifier,
+    hourlyWeather: WeatherData.Result.Hourly?
+) {
+    Row(modifier = modifier) {
 
+    }
 }
