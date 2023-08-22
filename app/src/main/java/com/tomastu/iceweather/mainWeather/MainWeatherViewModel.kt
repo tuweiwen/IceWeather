@@ -1,4 +1,4 @@
-package com.tomastu.iceweather
+package com.tomastu.iceweather.mainWeather
 
 import android.util.Log
 import android.widget.Toast
@@ -9,6 +9,11 @@ import com.amap.api.location.AMapLocationClientOption
 import com.amap.api.services.core.LatLonPoint
 import com.amap.api.services.geocoder.GeocodeSearch
 import com.amap.api.services.geocoder.RegeocodeQuery
+import com.tomastu.iceweather.Network
+import com.tomastu.iceweather.R
+import com.tomastu.iceweather.WeatherApplication
+import com.tomastu.iceweather.WeatherData
+import com.tomastu.iceweather.await
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,7 +22,7 @@ import java.util.Locale
 
 private const val TAG = "MainViewModel"
 
-class MainViewModel : ViewModel() {
+class MainWeatherViewModel : ViewModel() {
     private val _weatherData = MutableStateFlow<WeatherData?>(null)
     private var lat: Double? = null
     private var lon: Double? = null

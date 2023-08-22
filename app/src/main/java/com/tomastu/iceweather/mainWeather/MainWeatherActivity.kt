@@ -1,4 +1,4 @@
-package com.tomastu.iceweather
+package com.tomastu.iceweather.mainWeather
 
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -9,20 +9,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -33,10 +25,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -47,14 +37,16 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.nativead.NativeAdOptions
+import com.tomastu.iceweather.R
 import com.tomastu.iceweather.jsonUtils.JsonName2Resource
 import com.tomastu.iceweather.ui.theme.WeatherApiTestTheme
+import com.tomastu.iceweather.SHA1
 
 private const val TAG = "MainActivity"
 
 class MainActivity : ComponentActivity() {
     private lateinit var adLoader: AdLoader
-    private lateinit var viewModel: MainViewModel
+    private lateinit var viewModel: MainWeatherViewModel
     private val permissionRequestLauncher: ActivityResultLauncher<String> =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
@@ -70,9 +62,15 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 初始化ViewModel
-        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        // STEP0 : 高德 SDK 需要SHA1值，可以通过此方法动态获取
+        Log.d(TAG, "SHA1: ${SHA1.getSHA1(this)}")
 
+        // STEP1 : ViewModel 相关行为
+        // 初始化ViewModel
+        viewModel = ViewModelProvider(this)[MainWeatherViewModel::class.java]
+
+
+        // STEP2 : AdMob 相关行为
         // 初始化AdMob
         MobileAds.initialize(this) { status ->
             Log.d(TAG, "AdMob status -> $status")
@@ -139,6 +137,11 @@ class MainActivity : ComponentActivity() {
                 )
                 .build()
 
+        // 加载广告
+        adLoader.loadAd(AdRequest.Builder().build())
+
+
+        // STEP3 : 定位权限相关行为
         // 定位权限检查
         if (checkSelfPermission("android.permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_GRANTED) {
             // permission granted -> do get position feature here
@@ -155,11 +158,8 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        Log.d(TAG, "SHA1: ${test.sHA1(this)}")
 
-        // 加载广告
-        adLoader.loadAd(AdRequest.Builder().build())
-
+        // STEP4 : 加载视图内容
         setContent {
             WeatherApiTestTheme {
                 // A surface container using the 'background' color from the theme
@@ -171,6 +171,7 @@ class MainActivity : ComponentActivity() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
 
+        // 针对 系统语言设置 的变更
         val locales = newConfig.locales[0] // 这里返回的是整个系统中配置过的所有语言，这里只使用第一个
         if (::viewModel.isInitialized) {
             viewModel.updateLanguageAndCountry(locales.language, locales.country)
@@ -178,159 +179,12 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun CurrentWeather(
-    modifier: Modifier = Modifier,
-    temperature: Double,
-    weather: String,
-    weatherIconId: Int,
-    keypoint: String,
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.padding(top = 30.dp, bottom = 30.dp)
-    ) {
-        Icon(painter = painterResource(id = weatherIconId), contentDescription = weather)
-
-        Row(modifier = Modifier.padding(top = 40.dp, bottom = 20.dp)) {
-            Text("${temperature.toInt()}℃", fontSize = 25.sp)
-            Text("|", modifier = Modifier.padding(start = 30.dp, end = 30.dp), fontSize = 25.sp)
-            Text(weather, fontSize = 25.sp)
-        }
-
-        Text(keypoint, fontSize = 15.sp)
-    }
-}
-
-@Composable
-fun HourForecastList(
-    modifier: Modifier = Modifier,
-    hourlyWeather: WeatherData.Result.Hourly?
-) {
-    LazyRow(
-        modifier = modifier,
-        contentPadding = PaddingValues(start = 20.dp)
-    ) {
-        repeat(12) { index ->
-            item {
-                HourForecastItem(
-                    modifier = Modifier
-                        .padding(end = 20.dp)
-                        .width(118.dp),
-                    temperature = hourlyWeather?.temperature?.get(index)?.value
-                        ?: 34.toDouble(),
-                    time = hourlyWeather?.temperature?.get(index)?.datetime?.removeRange(0..10)
-                        ?.removeRange(5..10) ?: "12:00",
-                    weather = JsonName2Resource.transform2String(
-                        hourlyWeather?.skycon?.get(index)?.value ?: "weather_unknow"
-                    ),
-                    weatherIconId = JsonName2Resource.transform2DrawableId(
-                        hourlyWeather?.skycon?.get(
-                            index
-                        )?.value ?: "CLEAR_DAY"
-                    )
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun HourForecastItem(
-    modifier: Modifier = Modifier,
-    time: String,
-    temperature: Double = 34.toDouble(),
-    weather: String,
-    weatherIconId: Int,
-) {
-    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = time,
-            fontSize = 15.sp,
-            modifier = Modifier.padding(bottom = 5.dp)
-        )
-
-        Icon(
-            painter = painterResource(id = weatherIconId),
-            contentDescription = weather,
-            modifier = Modifier.width(35.dp)
-        )
-
-        Text(
-            text = weather,
-            fontSize = 15.sp,
-            modifier = Modifier.padding(top = 5.dp, bottom = 5.dp)
-        )
-
-        Text(text = "${temperature.toInt()}℃", fontSize = 15.sp)
-    }
-}
-
-@Composable
-fun DailyForecastList(
-    modifier: Modifier = Modifier,
-    dailyWeather: WeatherData.Result.Daily?
-) {
-    Column(modifier = modifier.padding(top = 20.dp)) {
-        repeat(5) { index ->
-            DailyForecastItem(
-                modifier = Modifier.padding(bottom = 20.dp),
-                tempMax = dailyWeather?.temperature?.get(index)?.max ?: 12.toDouble(),
-                tempMin = dailyWeather?.temperature?.get(index)?.min ?: 23.toDouble(),
-                weather = JsonName2Resource.transform2String(
-                    dailyWeather?.skycon?.get(index)?.value ?: "weather_unknow"
-                ),
-                weatherIconId = JsonName2Resource.transform2DrawableId(
-                    dailyWeather?.skycon?.get(
-                        index
-                    )?.value ?: "CLEAR_DAY"
-                ),
-                date = dailyWeather?.temperature?.get(index)?.date?.removeRange(0..4)
-                    ?.removeRange(5..16) ?: "6-18"
-            )
-        }
-    }
-}
-
-@Composable
-fun DailyForecastItem(
-    modifier: Modifier = Modifier,
-    tempMax: Double,
-    tempMin: Double,
-    weather: String,
-    weatherIconId: Int,
-    date: String,
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(date, fontSize = 15.sp)
-
-        Icon(
-            painter = painterResource(id = weatherIconId),
-            contentDescription = weather,
-            modifier = Modifier
-                .height(50.dp)
-                .aspectRatio(1f)
-                .padding(start = 10.dp, end = 10.dp)
-        )
-
-        Text(
-            "${tempMin.toInt()}℃ ~ ${tempMax.toInt()}℃",
-            fontSize = 15.sp,
-            modifier = Modifier.padding(end = 5.dp)
-        )
-
-        Text(weather, fontSize = 15.sp)
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeatherPage(
     modifier: Modifier = Modifier,
-    viewModel: MainViewModel,
+    viewModel: MainWeatherViewModel,
 ) {
     val road by viewModel.road.collectAsState()
     val weatherData by viewModel.weatherData.collectAsState()
@@ -351,6 +205,7 @@ fun WeatherPage(
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(MaterialTheme.colorScheme.primary),
                 title = {
+                    // todo(高德返回的中文地名，在系统为英语的时候需要考虑换成英文)
                     Text(
                         modifier = Modifier,
                         text = road,
@@ -383,15 +238,5 @@ fun WeatherPage(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun HourlyLineGraph(
-    modifier: Modifier = Modifier,
-    hourlyWeather: WeatherData.Result.Hourly?
-) {
-    Row(modifier = modifier) {
-
     }
 }

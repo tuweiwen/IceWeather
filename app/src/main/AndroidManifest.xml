@@ -27,7 +27,7 @@
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-9583057859081785~7091141744"/>
         <activity
-            android:name=".MainActivity"
+            android:name=".mainWeather.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.WeatherApiTest"
             android:configChanges="layoutDirection|locale">

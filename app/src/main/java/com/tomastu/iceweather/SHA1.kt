@@ -1,38 +1,34 @@
-package com.tomastu.iceweather;
+package com.tomastu.iceweather
 
-import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
+import android.content.Context
+import android.content.pm.PackageManager
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Locale;
-
-class test {
-    public static String sHA1(Context context) {
+object SHA1 {
+    fun getSHA1(context: Context): String? {
         try {
-            PackageInfo info = context.getPackageManager().getPackageInfo(
-                    context.getPackageName(), PackageManager.GET_SIGNATURES);
-            byte[] cert = info.signatures[0].toByteArray();
-            MessageDigest md = MessageDigest.getInstance("SHA1");
-            byte[] publicKey = md.digest(cert);
-            StringBuffer hexString = new StringBuffer();
-            for (int i = 0; i < publicKey.length; i++) {
-                String appendString = Integer.toHexString(0xFF & publicKey[i])
-                        .toUpperCase(Locale.US);
-                if (appendString.length() == 1)
-                    hexString.append("0");
-                hexString.append(appendString);
-                hexString.append(":");
+            val info = context.packageManager.getPackageInfo(
+                context.packageName, PackageManager.GET_SIGNATURES
+            )
+            val cert = info.signatures[0].toByteArray()
+            val md = MessageDigest.getInstance("SHA1")
+            val publicKey = md.digest(cert)
+            val hexString = StringBuffer()
+            for (b in publicKey) {
+                val appendString = Integer.toHexString(0xFF and b.toInt())
+                    .uppercase()
+                if (appendString.length == 1) hexString.append("0")
+                hexString.append(appendString)
+                hexString.append(":")
             }
-            String result = hexString.toString();
-            return result.substring(0, result.length() - 1);
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            val result = hexString.toString()
+            return result.substring(0, result.length - 1)
+        } catch (e: PackageManager.NameNotFoundException) {
+            e.printStackTrace()
+        } catch (e: NoSuchAlgorithmException) {
+            e.printStackTrace()
         }
-        return null;
+        return null
     }
 }
-
