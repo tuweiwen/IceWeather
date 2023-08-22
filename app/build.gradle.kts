@@ -70,6 +70,8 @@ dependencies {
     implementation(libs.viewmodel.compose)
     implementation(libs.accompanist.swiperefresh)
     implementation(libs.fragment.ktx)
+    implementation(libs.navigation.compose)
+    implementation(libs.splash)
 //    implementation(libs.coroutine.core)
 //    implementation(libs.coroutine.android)
     implementation(files("libs/AMap2DMap_6.0.0_AMapSearch_9.5.0_AMapLocation_6.3.0_20230410.aar"))
@@ -93,7 +95,7 @@ gradle.afterProject {
         println("adding test tasks to $projectString")
         tasks.register("test") {
 //            doLast {
-                println("running tests for $projectString")
+            println("running tests for $projectString")
 //            }
         }
     }

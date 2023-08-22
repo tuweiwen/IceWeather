@@ -25,4 +25,6 @@
     <string name="keypoint_unknow">啥都不知道呢</string>
     <string name="position_missing_hint">位置信息缺失，请尝试下拉刷新</string>
     <string name="unknow_position">未知地点</string>
+    <string name="weather">天气</string>
+    <string name="information">更多</string>
 </resources>

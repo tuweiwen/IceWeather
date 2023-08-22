@@ -37,6 +37,8 @@ data-store = { group = "androidx.datastore", name = "datastore-preferences", ver
 viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version = "2.6.1" }
 accompanist-swiperefresh = { group = "com.google.accompanist", name = "accompanist-swiperefresh", version = "0.27.0" }
 fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version = "1.6.1" }
+navigation-compose = { group = "androidx.navigation", name = "navigation-common", version = "2.7.0" }
+splash = { group = "androidx.core", name = "core-splashscreen", version = "1.0.1" }
 #coroutine-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutine" }
 #coroutine-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutine" }
 

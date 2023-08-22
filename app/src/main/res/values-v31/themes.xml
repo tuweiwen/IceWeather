@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.WeatherApiTest" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowSplashScreenBackground">#3DC4DC</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_ice_weather_logo</item>
+    </style>
+</resources>
