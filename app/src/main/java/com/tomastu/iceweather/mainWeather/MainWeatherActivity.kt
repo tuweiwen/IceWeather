@@ -116,8 +116,8 @@ class MainActivity : ComponentActivity() {
                 .withAdListener(object : AdListener() {
                     override fun onAdFailedToLoad(p0: LoadAdError) {
                         // Handle the failure by logging, altering the UI, and so on.
-                        Toast.makeText(this@MainActivity, "ads load failed!", Toast.LENGTH_SHORT)
-                            .show()
+                        /*Toast.makeText(this@MainActivity, "ads load failed!", Toast.LENGTH_SHORT)
+                            .show()*/
                         Log.d(
                             TAG, """
                            | p0.responseInfo -> ${p0.responseInfo}
