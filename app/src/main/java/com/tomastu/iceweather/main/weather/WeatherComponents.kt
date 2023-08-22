@@ -81,7 +81,12 @@ fun CurrentWeather(
             Text(weather, fontSize = 25.sp)
         }
 
-        Text(keypoint, fontSize = 15.sp)
+        Text(
+            modifier = Modifier.padding(horizontal = 20.dp),
+            text = keypoint,
+            fontSize = 17.sp,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
