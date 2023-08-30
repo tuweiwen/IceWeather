@@ -1,6 +1,6 @@
 [versions]
-agp = "8.2.0-alpha16"
-gradle = "8.1.0"
+agp = "8.3.0-alpha01"
+gradle = "8.3.0-alpha01"
 kotlin = "1.8.10"
 core-ktx = "1.10.1"
 junit = "4.13.2"
@@ -9,9 +9,11 @@ espresso-core = "3.5.1"
 lifecycle-runtime-ktx = "2.6.1"
 activity-compose = "1.7.2"
 compose-bom = "2023.08.00"
-play-services-ads = "22.2.0"
+play-services-ads = "22.3.0"
 retrofit = "2.9.0"
 data-store = "1.0.0"
+#appcompat = "1.6.1"
+#material = "1.9.0"
 
 
 [libraries]
@@ -37,8 +39,10 @@ data-store = { group = "androidx.datastore", name = "datastore-preferences", ver
 viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version = "2.6.1" }
 accompanist-swiperefresh = { group = "com.google.accompanist", name = "accompanist-swiperefresh", version = "0.27.0" }
 fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version = "1.6.1" }
-navigation-compose = { group = "androidx.navigation", name = "navigation-common", version = "2.7.0" }
+navigation-compose = { group = "androidx.navigation", name = "navigation-common", version = "2.7.1" }
 splash = { group = "androidx.core", name = "core-splashscreen", version = "1.0.1" }
+#appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+#material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 #coroutine-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutine" }
 #coroutine-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutine" }
 
@@ -46,6 +50,7 @@ splash = { group = "androidx.core", name = "core-splashscreen", version = "1.0.1
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
 
 [bundles]
 

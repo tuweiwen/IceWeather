@@ -27,4 +27,8 @@
     <string name="unknow_position">未知地點</string>
     <string name="weather">天氣</string>
     <string name="information">更多</string>
+    <string name="privacyAgreementDialogTitle">隱私政策</string>
+    <string name="agree">同意</string>
+    <string name="disagree">不同意</string>
+    <string name="agreementContent" >我們非常重視你的隱私保護和個人信息保護，請仔細閱讀《隱私政策》中的條款。我們將嚴格按照政策內容使用和保護您的個人信息。\n\n1. 為了獲取天氣信息，我們需要獲取網絡權限，並向彩雲天氣伺服器請求數據\n\n2. 為了提供定位城市實時天氣等功能，我們需要獲取位置信息權限並收集、使用位置信息\n\n3. 為了更好地向你推薦個性化廣告，我們需要獲取IMEI、IMSI、MAC地址、機型等設備信息和粗略的地理位置\n\n4. 冰棒天氣中包含第三方SDK，它們可能會收集和處理你的信息。當你同意《隱私協議》後，將會允許第三方直接收集和處理你的信息。\n\n若你點擊「同意」，代表你同意並開啟上述功能。</string>
 </resources>

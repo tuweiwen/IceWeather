@@ -45,6 +45,10 @@ import com.tomastu.iceweather.ui.theme.WeatherApiTestTheme
 
 private const val TAG = "MainActivity"
 
+private enum class MainActivityPageState {
+    WEATHER, MORE
+}
+
 class MainActivity : ComponentActivity() {
     private lateinit var adLoader: AdLoader
     private lateinit var viewModel: WeatherViewModel

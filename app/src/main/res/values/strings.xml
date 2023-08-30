@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Ice Weather</string>
     <string name="CLEAR_DAY">CLEAR DAY</string>
-    <string name="CLEAR_NIGHT">CLEAR DAY</string>
+    <string name="CLEAR_NIGHT" translatable="false">CLEAR DAY</string>
     <string name="PARTLY_CLOUDY_DAY">PARTLY CLOUDY</string>
     <string name="PARTLY_CLOUDY_NIGHT">PARTLY CLOUDY</string>
     <string name="CLOUDY">CLOUDY</string>
@@ -26,4 +26,8 @@
     <string name="unknow_position">UNKNOW POSITION</string>
     <string name="weather">Weather</string>
     <string name="information">More</string>
+    <string name="privacyAgreementDialogTitle">Privacy Policy</string>
+    <string name="agree">Agree</string>
+    <string name="disagree">disagree</string>
+    <string name="agreementContent">We take the protection of your privacy and the protection of your personal information very seriously, so please read the terms of the Privacy Policy carefully. We will use and protect your personal information in strict accordance with the content of the policy.\n\n1. in order to obtain weather information, we need to obtain network access and request data from the Color Cloud Weather server\n\n2. in order to provide the function of locating the real-time weather of the city, we need to obtain the permission of location information and collect and use the location information\n\n3. in order to better recommend personalized advertisements to you, we need to obtain device information such as IMEI, IMSI, MAC address, model, and rough geographic location.\n\n4. Ice Weather contains third-party SDKs that may collect and process your information.\n\nWhen you agree to the Privacy Agreement, it will allow the third party to collect and process your information directly.  By clicking \"Agree\", you agree to the above features.</string>
 </resources>

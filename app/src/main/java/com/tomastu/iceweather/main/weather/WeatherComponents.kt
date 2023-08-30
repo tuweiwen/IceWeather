@@ -1,6 +1,7 @@
 package com.tomastu.iceweather.main.weather
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -247,10 +248,12 @@ fun HourlyForecastItemWithLine(
     var width by remember { mutableStateOf(0.dp) }
     var height by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current.density
+    val drawColor = if (isSystemInDarkTheme()) Color.White else Color.Black
+
 
     Column(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = time,
@@ -311,12 +314,12 @@ fun HourlyForecastItemWithLine(
 
             drawPath(
                 path = path,
-                color = Color.Black,
+                color = drawColor,
                 style = Stroke(width = 7f)
             )
             // 绘制折线上面的圆点
             drawCircle(
-                color = Color.Black,
+                color = drawColor,
                 radius = 10f,
                 center = Offset(
                     width.toPx() / 2,

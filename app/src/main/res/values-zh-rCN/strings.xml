@@ -27,4 +27,8 @@
     <string name="unknow_position">未知地点</string>
     <string name="weather">天气</string>
     <string name="information">更多</string>
+    <string name="privacyAgreementDialogTitle">隐私政策</string>
+    <string name="agree">同意</string>
+    <string name="disagree">不同意</string>
+    <string name="agreementContent" >我们非常重视你的隐私保护和个人信息保护，请仔细阅读《隐私政策》中的条款。我们将严格按照政策内容使用和保护您的个人信息。\n\n1. 为了获取天气信息，我们需要获取网络权限，并向彩云天气服务器请求数据 \n\n2. 为了提供定位城市实时天气等功能，我们需要获取位置信息权限并收集、使用位置信息\n\n3. 为了更好地向你推荐个性化广告，我们需要获取IMEI、IMSI、MAC地址、机型等设备信息和粗略的地理位置\n\n4. 冰棒天气中包含第三方SDK，它们可能会收集和处理你的信息。当你同意《隐私协议》后，将会允许第三方直接收集和处理你的信息。\n\n若你点击“同意”，代表你同意并开启上述功能。</string>
 </resources>

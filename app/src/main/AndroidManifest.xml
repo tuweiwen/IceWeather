@@ -34,6 +34,12 @@
             android:exported="true"
             android:theme="@style/Theme.WeatherApiTest"
             android:configChanges="layoutDirection|locale">
+
+        </activity>
+
+        <activity android:name=".firstOpen.FirstOpenActivity"
+            android:exported="true"
+            android:theme="@style/Theme.WeatherApiTest">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

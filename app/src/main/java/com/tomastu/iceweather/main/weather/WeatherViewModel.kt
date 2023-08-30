@@ -39,12 +39,6 @@ class WeatherViewModel : ViewModel() {
     val weatherData: StateFlow<WeatherData?>
         get() = _weatherData
 
-    init {
-        // todo : 高德隐私合规，后续需放在首次开屏
-        AMapLocationClient.updatePrivacyShow(WeatherApplication.context, true, true)
-        AMapLocationClient.updatePrivacyAgree(WeatherApplication.context, true)
-    }
-
     fun updateLanguageAndCountry(language: String, country: String) {
         currentLanguage = language
         currentCountry = country
