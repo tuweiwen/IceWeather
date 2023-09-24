@@ -8,16 +8,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -28,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
@@ -42,6 +40,7 @@ import com.tomastu.iceweather.main.weather.PositionInformationAppBar
 import com.tomastu.iceweather.main.weather.WeatherPage
 import com.tomastu.iceweather.main.weather.WeatherViewModel
 import com.tomastu.iceweather.ui.theme.WeatherApiTestTheme
+import kotlin.concurrent.thread
 
 private const val TAG = "MainActivity"
 
@@ -145,7 +144,6 @@ class MainActivity : ComponentActivity() {
         // 加载广告
         adLoader.loadAd(AdRequest.Builder().build())
 
-
         // STEP3 : 定位权限相关行为
         // 定位权限检查
         if (checkSelfPermission("android.permission.ACCESS_FINE_LOCATION") == PackageManager.PERMISSION_GRANTED) {
@@ -157,69 +155,62 @@ class MainActivity : ComponentActivity() {
         } else {
             // permission denied -> use this to request location permission,
             //                      and we will explain this later in article
-            if (checkSelfPermission("android.permission.ACCESS_COARSE_LOCATION") != PackageManager.PERMISSION_GRANTED) {
-                permissionRequestLauncher.launch("android.permission.ACCESS_FINE_LOCATION")
-                Log.d(TAG, "onCreate: don't get location permission!")
-            }
+            permissionRequestLauncher.launch("android.permission.ACCESS_FINE_LOCATION")
         }
 
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         // STEP4 : 加载视图内容
         // todo(后续在这里替换 Page，使用 navigation)
         setContent {
             WeatherApiTestTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background,
-                ) {
-                    var pageState by remember { mutableStateOf(MainActivityPageState.WEATHER) }
-                    val roadName by viewModel.road.collectAsState()
-                    Scaffold(
-                        topBar = {
-                            if (pageState == MainActivityPageState.WEATHER) {
-                                PositionInformationAppBar(roadName = roadName)
-                            }
-                        },
-                        bottomBar = {
-                            NavigationBar {
-                                NavigationBarItem(
-                                    selected = pageState == MainActivityPageState.WEATHER,
-                                    onClick = { pageState = MainActivityPageState.WEATHER },
-                                    icon = {
-                                        Icon(
-                                            modifier = Modifier.size(25.dp, 25.dp),
-                                            painter = painterResource(id = R.drawable.clear_day),
-                                            contentDescription = stringResource(id = R.string.weather),
-                                        )
-                                    },
-                                    label = { Text(text = stringResource(id = R.string.weather)) })
-                                NavigationBarItem(
-                                    selected = pageState == MainActivityPageState.MORE,
-                                    onClick = { pageState = MainActivityPageState.MORE },
-                                    icon = {
-                                        Icon(
-                                            modifier = Modifier.size(25.dp, 25.dp),
-                                            painter = painterResource(id = R.drawable.info),
-                                            contentDescription = stringResource(id = R.string.information)
-                                        )
-                                    },
-                                    label = { Text(text = stringResource(id = R.string.information)) })
-                            }
+                var pageState by remember { mutableStateOf(MainActivityPageState.WEATHER) }
+                val roadName by viewModel.road.collectAsState()
+                Scaffold(
+                    topBar = {
+                        if (pageState == MainActivityPageState.WEATHER) {
+                            PositionInformationAppBar(roadName = roadName)
                         }
-                    ) {
-                        when (pageState) {
-                            MainActivityPageState.WEATHER -> {
-                                WeatherPage(
-                                    modifier = Modifier
-                                        .padding(it)
-                                        .fillMaxWidth(),
-                                    viewModel = viewModel
-                                )
-                            }
-                            MainActivityPageState.MORE -> {
-                                AboutPage()
-                            }
+                    },
+                    bottomBar = {
+                        NavigationBar {
+                            NavigationBarItem(
+                                selected = pageState == MainActivityPageState.WEATHER,
+                                onClick = { pageState = MainActivityPageState.WEATHER },
+                                icon = {
+                                    Icon(
+                                        modifier = Modifier.size(25.dp, 25.dp),
+                                        painter = painterResource(id = R.drawable.clear_day),
+                                        contentDescription = stringResource(id = R.string.weather),
+                                    )
+                                },
+                                label = { Text(text = stringResource(id = R.string.weather)) })
+                            NavigationBarItem(
+                                selected = pageState == MainActivityPageState.MORE,
+                                onClick = { pageState = MainActivityPageState.MORE },
+                                icon = {
+                                    Icon(
+                                        modifier = Modifier.size(25.dp, 25.dp),
+                                        painter = painterResource(id = R.drawable.info),
+                                        contentDescription = stringResource(id = R.string.information)
+                                    )
+                                },
+                                label = { Text(text = stringResource(id = R.string.information)) })
+                        }
+                    }
+                ) {
+                    when (pageState) {
+                        MainActivityPageState.WEATHER -> {
+                            WeatherPage(
+                                modifier = Modifier
+                                    .padding(it)
+                                    .fillMaxWidth(),
+                                viewModel = viewModel
+                            )
+                        }
+
+                        MainActivityPageState.MORE -> {
+                            AboutPage()
                         }
                     }
                 }

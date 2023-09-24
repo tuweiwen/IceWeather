@@ -31,6 +31,7 @@ class WeatherViewModel : ViewModel() {
     private var currentCountry = Locale.getDefault().country
     private var _road =
         MutableStateFlow(WeatherApplication.context.getString(R.string.unknow_position))
+    private val applicationContext = WeatherApplication.context
 
     val isLoading = _isLoading.asStateFlow()
 
@@ -80,8 +81,12 @@ class WeatherViewModel : ViewModel() {
                     .append("_")
                     .append(currentCountry)
                     .toString()
-                _weatherData.value =
-                    Network.getCaiyunService().getWeather(lon!!, lat!!, countryCode).await()
+                try {
+                    _weatherData.value =
+                        Network.getCaiyunService().getWeather(lon!!, lat!!, countryCode).await()
+                } catch (exception: Exception) {
+                    Toast.makeText(applicationContext, applicationContext.getText(R.string.network_request_failed), Toast.LENGTH_SHORT).show()
+                }
             } else {
                 Toast.makeText(
                     WeatherApplication.context,
@@ -155,6 +160,4 @@ class WeatherViewModel : ViewModel() {
 
         // 后续更改 _isLoading 状态的位置，在定位的callback中
     }
-
-
 }

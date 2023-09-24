@@ -41,6 +41,7 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.tomastu.iceweather.R
 import com.tomastu.iceweather.WeatherData
 import com.tomastu.iceweather.jsonUtils.JsonName2Resource
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -96,30 +97,29 @@ fun HourForecastList(
     modifier: Modifier = Modifier,
     hourlyWeather: WeatherData.Result.Hourly?
 ) {
-    val temperatureList = mutableListOf<Double>()
+    val temperatureList = mutableListOf<Int>()
 
     if (hourlyWeather != null) {
         temperatureList.run {
-            repeat(12) { index ->
-                add(hourlyWeather.temperature[index].value)
+            repeat(24) { index ->
+                add(hourlyWeather.temperature[index].value.roundToInt())
             }
             sort()
         }
     } else {
         // 无数据时先填充 mock 数据
-        repeat(12) { temperatureList.add(34.0) }
+        repeat(24) { temperatureList.add(it) }
     }
 
     LazyRow(
         modifier = modifier,
     ) {
-        repeat(12) { index ->
+        repeat(24) { index ->
             item {
                 HourlyForecastItemWithLine(
                     modifier = Modifier
                         .width(140.dp),
-                    temperature = hourlyWeather?.temperature?.get(index)?.value
-                        ?: 34.toDouble(),
+                    temperature = temperatureList[index],
                     time = hourlyWeather?.temperature?.get(index)?.datetime?.removeRange(0..10)
                         ?.removeRange(5..10) ?: "12:00",
                     weather = JsonName2Resource.transform2String(
@@ -132,10 +132,8 @@ fun HourForecastList(
                     ),
                     highestTemp = temperatureList.max(),
                     lowestTemp = temperatureList.min(),
-                    previousTemp = if (index == 0) null else hourlyWeather?.temperature?.get(index - 1)?.value
-                        ?: 34.toDouble(),
-                    nextTemp = if (index == 11) null else hourlyWeather?.temperature?.get(index + 1)?.value
-                        ?: 34.toDouble(),
+                    previousTemp = if (index == 0) null else temperatureList[index - 1],
+                    nextTemp = if (index == 23) null else temperatureList[index + 1],
                 )
             }
         }
@@ -237,19 +235,18 @@ fun DailyForecastItem(
 fun HourlyForecastItemWithLine(
     modifier: Modifier = Modifier,
     time: String,
-    temperature: Double,
+    temperature: Int,
     weather: String,
     weatherIconId: Int,
-    highestTemp: Double,
-    lowestTemp: Double,
-    previousTemp: Double?,
-    nextTemp: Double?,
+    highestTemp: Int,
+    lowestTemp: Int,
+    previousTemp: Int?,
+    nextTemp: Int?,
 ) {
     var width by remember { mutableStateOf(0.dp) }
     var height by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current.density
     val drawColor = if (isSystemInDarkTheme()) Color.White else Color.Black
-
 
     Column(
         modifier = modifier,
@@ -285,17 +282,17 @@ fun HourlyForecastItemWithLine(
         ) {
             val path = Path()
             // 当前天气占高度的百分比
-            val currentPercentage = (temperature - lowestTemp) / (highestTemp - lowestTemp)
+            val currentPercentage = (temperature - lowestTemp) * 1.0f / (highestTemp - lowestTemp)
             if (previousTemp != null) {
                 // 左边缘起始点对应的数值
                 val leftPointTemp = (previousTemp + temperature) / 2
                 // 左边缘起始点占高度的百分比
-                val leftPercentage = (leftPointTemp - lowestTemp) / (highestTemp - lowestTemp)
+                val leftPercentage = (leftPointTemp - lowestTemp) * 1.0f / (highestTemp - lowestTemp)
                 with(path) {
                     // 移动到左边缘的点
-                    moveTo(0F, (height.toPx() * (1 - leftPercentage)).toFloat())
+                    moveTo(0F, (height.toPx() * (1 - leftPercentage)))
                     // 画线到中间的点
-                    lineTo(width.toPx() / 2, (height.toPx() * (1 - currentPercentage)).toFloat())
+                    lineTo(width.toPx() / 2, (height.toPx() * (1 - currentPercentage)))
                 }
             }
 
@@ -303,12 +300,12 @@ fun HourlyForecastItemWithLine(
                 // 右边缘起始点对应的数值
                 val rightPointTemp = (nextTemp + temperature) / 2
                 // 右边缘起始点占高度的百分比
-                val rightPercentage = (rightPointTemp - lowestTemp) / (highestTemp - lowestTemp)
+                val rightPercentage = (rightPointTemp - lowestTemp) * 1.0f / (highestTemp - lowestTemp)
                 with(path) {
                     // 移动到中间的点
-                    moveTo(width.toPx() / 2, (height.toPx() * (1 - currentPercentage)).toFloat())
+                    moveTo(width.toPx() / 2, (height.toPx() * (1 - currentPercentage)))
                     // 画线到右边缘的点
-                    lineTo(width.toPx(), (height.toPx() * (1 - rightPercentage)).toFloat())
+                    lineTo(width.toPx(), (height.toPx() * (1 - rightPercentage)))
                 }
             }
 
@@ -323,12 +320,12 @@ fun HourlyForecastItemWithLine(
                 radius = 10f,
                 center = Offset(
                     width.toPx() / 2,
-                    (height.toPx() * (1 - currentPercentage)).toFloat()
+                    (height.toPx() * (1 - currentPercentage))
                 )
             )
         }
 
-        Text(text = "${temperature.toInt()}℃", fontSize = 15.sp)
+        Text(text = "${temperature}℃", fontSize = 15.sp)
     }
 }
 
