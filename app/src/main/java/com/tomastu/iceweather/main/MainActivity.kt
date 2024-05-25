@@ -27,6 +27,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
@@ -40,7 +45,6 @@ import com.tomastu.iceweather.main.weather.PositionInformationAppBar
 import com.tomastu.iceweather.main.weather.WeatherPage
 import com.tomastu.iceweather.main.weather.WeatherViewModel
 import com.tomastu.iceweather.ui.theme.WeatherApiTestTheme
-import kotlin.concurrent.thread
 
 private const val TAG = "MainActivity"
 
@@ -165,6 +169,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             WeatherApiTestTheme {
                 var pageState by remember { mutableStateOf(MainActivityPageState.WEATHER) }
+                val navController = rememberNavController()
                 val roadName by viewModel.road.collectAsState()
                 Scaffold(
                     topBar = {
@@ -174,8 +179,10 @@ class MainActivity : ComponentActivity() {
                     },
                     bottomBar = {
                         NavigationBar {
+                            val navBackStackEntry by navController.currentBackStackEntryAsState()
+                            val hierarchy = navBackStackEntry?.destination?.hierarchy
                             NavigationBarItem(
-                                selected = pageState == MainActivityPageState.WEATHER,
+                                selected = hierarchy?.any {it.route == "weather"} == true,
                                 onClick = { pageState = MainActivityPageState.WEATHER },
                                 icon = {
                                     Icon(
@@ -199,17 +206,17 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 ) {
-                    when (pageState) {
-                        MainActivityPageState.WEATHER -> {
+                    val paddingValue = it
+                    NavHost(navController = navController, startDestination = "weather") {
+                        composable("weather") {
                             WeatherPage(
                                 modifier = Modifier
-                                    .padding(it)
+                                    .padding(paddingValue)
                                     .fillMaxWidth(),
                                 viewModel = viewModel
                             )
                         }
-
-                        MainActivityPageState.MORE -> {
+                        composable("more") {
                             AboutPage()
                         }
                     }

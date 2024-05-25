@@ -124,7 +124,7 @@ class WeatherViewModel : ViewModel() {
         })
     }
 
-    // 高德定位Client参数
+    // 高德定位 Client 参数
     private val options: AMapLocationClientOption = AMapLocationClientOption().apply {
         locationMode = AMapLocationClientOption.AMapLocationMode.Device_Sensors
         isOnceLocation = true
@@ -133,11 +133,11 @@ class WeatherViewModel : ViewModel() {
         AMapLocationClientOption.setLocationProtocol(AMapLocationClientOption.AMapLocationProtocol.HTTPS)
     }
 
-    // 高德定位Client
+    // 高德定位 Client
     private val locationClient: AMapLocationClient =
         AMapLocationClient(WeatherApplication.context).apply {
             setLocationOption(options)
-            // 设置定位Callback（获取到定位后的行为）
+            // 设置定位 Callback（获取到定位后的行为）
             setLocationListener {
                 Log.d(TAG, "setLocationListener callback result -> $it")
                 lat = it.latitude
@@ -148,7 +148,7 @@ class WeatherViewModel : ViewModel() {
                 query.extensions = "all"
                 // 进行异步搜索
                 geoSearch.getFromLocationAsyn(query)
-                // 获取定位后，停止Client
+                // 获取定位后，停止 Client
                 this.stopLocation()
                 _isLoading.value = false
             }
@@ -158,6 +158,6 @@ class WeatherViewModel : ViewModel() {
         _isLoading.value = true
         locationClient.startLocation()
 
-        // 后续更改 _isLoading 状态的位置，在定位的callback中
+        // 后续更改 _isLoading 状态的位置，在定位的 callback 中
     }
 }

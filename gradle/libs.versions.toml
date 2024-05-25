@@ -1,23 +1,26 @@
 [versions]
-agp = "8.3.0-alpha05"
-gradle = "8.3.0-alpha05"
+agp = "8.4.1"
+firebase-bom = "33.0.0"
+gradle = "8.4.1"
 kotlin = "1.8.10"
-core-ktx = "1.10.1"
+core-ktx = "1.13.1"
 junit = "4.13.2"
 androidx-test-ext-junit = "1.1.5"
 espresso-core = "3.5.1"
-lifecycle-runtime-ktx = "2.6.1"
-activity-compose = "1.7.2"
-compose-bom = "2023.08.00"
+lifecycle-runtime-ktx = "2.8.0"
+activity-compose = "1.9.0"
+compose-bom = "2024.05.00"
 play-services-ads = "22.3.0"
 retrofit = "2.9.0"
-data-store = "1.0.0"
+data-store = "1.1.1"
 #appcompat = "1.6.1"
 #material = "1.9.0"
 
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
+firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
@@ -36,10 +39,10 @@ material3 = { group = "androidx.compose.material3", name = "material3" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit-gson-converter = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 data-store = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "data-store" }
-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version = "2.6.1" }
+viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version = "2.8.0" }
 accompanist-swiperefresh = { group = "com.google.accompanist", name = "accompanist-swiperefresh", version = "0.27.0" }
-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version = "1.6.1" }
-navigation-compose = { group = "androidx.navigation", name = "navigation-common", version = "2.7.1" }
+fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version = "1.7.1" }
+navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version = "2.7.7" }
 splash = { group = "androidx.core", name = "core-splashscreen", version = "1.0.1" }
 #appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 #material = { group = "com.google.android.material", name = "material", version.ref = "material" }
