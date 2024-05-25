@@ -8,7 +8,8 @@
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
 /.idea/dbnavigator.xml
-/.idea/deploymentTargetSelector.xml
+/keystore.jks
+/keystore.jks.base64.txt
 .DS_Store
 /build
 /captures
